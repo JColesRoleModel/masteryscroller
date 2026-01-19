@@ -1,0 +1,649 @@
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Book, Bookmark, Share2, Heart, Check, Sword, Crown, Eye, Flame } from 'lucide-react';
+
+/**
+ * ==============================
+ * DATASETS
+ * ==============================
+ */
+
+const DATA_48_LAWS = [
+  { id: 1, title: "NEVER OUTSHINE THE MASTER", body: "Always make those above you feel comfortably superior. Do not go too far in displaying your talents or you might inspire fear and insecurity. Make your masters appear more brilliant than they are." },
+  { id: 2, title: "NEVER PUT TOO MUCH TRUST IN FRIENDS", body: "Be wary of friends—they will betray you quickly out of envy. A former enemy will be more loyal because he has more to prove. If you have no enemies, find a way to make them." },
+  { id: 3, title: "CONCEAL YOUR INTENTIONS", body: "Keep people off-balance and in the dark by never revealing the purpose behind your actions. If they have no clue what you are up to, they cannot prepare a defense." },
+  { id: 4, title: "ALWAYS SAY LESS THAN NECESSARY", body: "When trying to impress, the more you say, the more common and less in control you appear. Powerful people impress and intimidate by saying less." },
+  { id: 5, title: "SO MUCH DEPENDS ON REPUTATION", body: "Reputation is the cornerstone of power. Once it slips, you are vulnerable. Make your reputation unassailable and learn to destroy enemies by opening holes in their reputations." },
+  { id: 6, title: "COURT ATTENTION AT ALL COST", body: "Everything is judged by appearance; what is unseen counts for nothing. Stand out. Make yourself a magnet of attention by appearing larger, more colorful, and more mysterious than the masses." },
+  { id: 7, title: "GET OTHERS TO DO THE WORK", body: "Use the wisdom, knowledge, and legwork of others to further your own cause. Your helpers will be forgotten and you will be remembered. Never do yourself what others can do for you." },
+  { id: 8, title: "MAKE OTHER PEOPLE COME TO YOU", body: "When you force the other person to act, you are the one in control. It is better to make your opponent come to you, abandoning his own plans. Lure him with fabulous gains." },
+  { id: 9, title: "WIN THROUGH YOUR ACTIONS", body: "Any triumph gained through argument is a Pyrrhic victory; the ill will lasts longer than the opinion change. It is more powerful to get agreement through actions, without saying a word." },
+  { id: 10, title: "INFECTION: AVOID THE UNHAPPY", body: "Emotional states are as infectious as diseases. The unfortunate draw misfortune on themselves and will draw it on you. Associate with the happy and fortunate instead." },
+  { id: 11, title: "KEEP PEOPLE DEPENDENT ON YOU", body: "To maintain independence you must always be needed and wanted. Make people depend on you for their happiness and prosperity. Never teach them enough so that they can do without you." },
+  { id: 12, title: "USE SELECTIVE HONESTY", body: "One sincere and honest move will cover over dozens of dishonest ones. Generosity brings down the guard of suspicious people. Once their armor is open, you can deceive them." },
+  { id: 13, title: "APPEAL TO SELF-INTEREST", body: "Do not remind an ally of past assistance; they will ignore you. Instead, uncover something in your request that benefits them and emphasize it." },
+  { id: 14, title: "POSE AS A FRIEND, WORK AS A SPY", body: "Knowing about your rival is critical. Play the spy yourself in social encounters; ask indirect questions to reveal weaknesses and intentions." },
+  { id: 15, title: "CRUSH YOUR ENEMY TOTALLY", body: "A feared enemy must be crushed completely. If one ember is left alight, a fire will break out. Crush him not only in body but in spirit." },
+  { id: 16, title: "USE ABSENCE TO INCREASE RESPECT", body: "Too much circulation makes the price go down. If you are established, temporary withdrawal will make you more admired. Create value through scarcity." },
+  { id: 17, title: "KEEP OTHERS IN SUSPENDED TERROR", body: "Humans need to see familiarity in actions. Turn the tables by being deliberately unpredictable. This strategy keeps them off-balance and can intimidate and terrorize." },
+  { id: 18, title: "DO NOT BUILD FORTRESSES", body: "Isolation exposes you to more dangers than it protects you from; it cuts you off from information and makes you a target. Better to circulate and mingle; the crowd shields you." },
+  { id: 19, title: "KNOW WHO YOU'RE DEALING WITH", body: "Never assume everyone will react to strategies in the same way. Deceive the wrong person and they will seek revenge for life. Choose victims carefully." },
+  { id: 20, title: "DO NOT COMMIT TO ANYONE", body: "Do not commit to any side or cause but yourself. By maintaining independence, you become the master of others, playing people against one another." },
+  { id: 21, title: "PLAY A SUCKER TO CATCH A SUCKER", body: "Make your victims feel smarter than you are. Once convinced of this, they will never suspect you have ulterior motives." },
+  { id: 22, title: "USE THE SURRENDER TACTIC", body: "When weaker, never fight for honor; surrender instead. It gives you time to recover and wait for their power to wane. Make surrender a tool of power." },
+  { id: 23, title: "CONCENTRATE YOUR FORCES", body: "Conserve forces by keeping them concentrated at their strongest point. Intensity defeats extensity. Find the one key patron who will give you milk for a long time." },
+  { id: 24, title: "PLAY THE PERFECT COURTIER", body: "The perfect courtier masters the art of indirection, flatters, yields to superiors, and asserts power over others in an oblique and graceful manner." },
+  { id: 25, title: "RE-CREATE YOURSELF", body: "Do not accept the roles society foists on you. Forge a new identity that commands attention. Be the master of your own image." },
+  { id: 26, title: "KEEP YOUR HANDS CLEAN", body: "You must seem a paragon of civility and efficiency. Maintain a spotless appearance by using others as scapegoats and cat's-paws to disguise your involvement." },
+  { id: 27, title: "CREATE A CULTLIKE FOLLOWING", body: "People desire to believe in something. Become a focal point by offering a cause or new faith. Keep words vague but full of promise." },
+  { id: 28, title: "ENTER ACTION WITH BOLDNESS", body: "If unsure, do not attempt it. Timidity is dangerous. Any mistakes committed through audacity are easily corrected with more audacity. Everyone admires the bold." },
+  { id: 29, title: "PLAN ALL THE WAY TO THE END", body: "Plan all the way to the end, taking into account consequences and obstacles. By planning, you will not be overwhelmed and will know when to stop." },
+  { id: 30, title: "MAKE ACCOMPLISHMENTS SEEM EFFORTLESS", body: "Your actions must seem natural and executed with ease. Conceal the toil and tricks. Teach no one your tricks or they will be used against you." },
+  { id: 31, title: "CONTROL THE OPTIONS", body: "The best deceptions give the other person a choice, but they are actually your puppets. Force them to choose between the lesser of two evils, both of which serve you." },
+  { id: 32, title: "PLAY TO PEOPLE'S FANTASIES", body: "The truth is often ugly and avoided. People flock to those who manufacture romance or fantasy. There is power in tapping into the fantasies of the masses." },
+  { id: 33, title: "DISCOVER EACH MAN'S THUMBSCREW", body: "Everyone has a weakness, usually an insecurity or secret pleasure. Once found, it is a thumbscrew you can turn to your advantage." },
+  { id: 34, title: "ACT LIKE A KING TO BE TREATED LIKE ONE", body: "The way you carry yourself determines how you are treated. By acting regally and confident, you make yourself seem destined to wear a crown." },
+  { id: 35, title: "MASTER THE ART OF TIMING", body: "Never seem in a hurry; it betrays a lack of control. Be patient. Sniff out the spirit of the times and strike fiercely when the time is ripe." },
+  { id: 36, title: "DISDAIN THINGS YOU CANNOT HAVE", body: "Acknowledging a petty problem gives it existence. The more attention you pay an enemy, the stronger you make him. If you cannot have something, show contempt for it." },
+  { id: 37, title: "CREATE COMPELLING SPECTACLES", body: "Striking imagery and symbolic gestures create an aura of power. Stage spectacles full of arresting visuals; dazzled by appearances, no one will notice what you are doing." },
+  { id: 38, title: "THINK AS YOU LIKE, BEHAVE LIKE OTHERS", body: "Flaunting unconventional ideas makes people think you want attention or look down on them. It is safer to blend in and share originality only with tolerant friends." },
+  { id: 39, title: "STIR UP WATERS TO CATCH FISH", body: "Anger is counterproductive; stay calm. But if you can make your enemies angry while staying calm yourself, you gain an advantage." },
+  { id: 40, title: "DESPISE THE FREE LUNCH", body: "What is offered for free involves a trick or obligation. Pay the full price to stay clear of guilt and deceit. Be lavish with money; generosity is a magnet for power." },
+  { id: 41, title: "AVOID STEPPING INTO A GREAT MAN'S SHOES", body: "What comes first appears better than what comes after. If you succeed a great man, you must accomplish double to outshine him. Establish your own identity by changing course." },
+  { id: 42, title: "STRIKE THE SHEPHERD", body: "Trouble often traces to a single strong individual. Do not negotiate; neutralize their influence by isolating or banishing them. Strike the source and the sheep will scatter." },
+  { id: 43, title: "WORK ON THE HEARTS AND MINDS", body: "Coercion creates a reaction that works against you. Seduce others into wanting to move in your direction by operating on their individual psychologies and emotions." },
+  { id: 44, title: "DISARM AND INFURIATE WITH THE MIRROR", body: "When you mirror your enemies, they cannot figure out your strategy. The Mirror Effect mocks and humiliates them, making them overreact." },
+  { id: 45, title: "PREACH CHANGE, BUT NEVER REFORM TOO MUCH", body: "Too much innovation is traumatic and leads to revolt. If new to power, show respect for the old ways. Make change feel like a gentle improvement." },
+  { id: 46, title: "NEVER APPEAR TOO PERFECT", body: "Appearing to have no faults is dangerous and creates envy. Occasionally display defects and admit to harmless vices to appear more human and deflect envy." },
+  { id: 47, title: "DO NOT GO PAST THE MARK", body: "Victory is perilous; arrogance can push you past your goal and create more enemies. Do not allow success to go to your head. Set a goal, reach it, then stop." },
+  { id: 48, title: "ASSUME FORMLESSNESS", body: "By taking a visible shape, you open yourself to attack. Keep yourself adaptable and on the move. Be as fluid and formless as water; never bet on stability." }
+];
+
+const DATA_33_STRATEGIES = [
+  { id: 1, title: "DECLARE WAR ON YOUR ENEMIES", category: "Self-Directed Warfare", body: "Life is endless battle; identify your enemies to gain focus and purpose. Inwardly declare war to find direction and energy." },
+  { id: 2, title: "DO NOT FIGHT THE LAST WAR", category: "Self-Directed Warfare", body: "The past leads to rigid thinking. Wage a guerrilla war on your mind by being fluid, mobile, and reacting only to the present moment." },
+  { id: 3, title: "DO NOT LOSE YOUR PRESENCE OF MIND", category: "Self-Directed Warfare", body: "Amidst turmoil, resist emotional responses (fear, anger). Maintain mental balance by exposing your mind to adversity and detaching from chaos." },
+  { id: 4, title: "CREATE A SENSE OF URGENCY", category: "Self-Directed Warfare", body: "Cut ties to the past and enter unknown territory. Place yourself on 'death ground' where you must fight desperately to survive and succeed." },
+  { id: 5, title: "AVOID THE SNARES OF GROUPTHINK", category: "Organizational Warfare", body: "Centralize authority to avoid irrational group decisions. Establish clear missions and control the overall dynamic without becoming overly authoritarian." },
+  { id: 6, title: "SEGMENT YOUR FORCES", category: "Organizational Warfare", body: "Achieve speed and adaptability by breaking forces into independent, mobile groups. Give them a mission and let them run to confuse the enemy." },
+  { id: 7, title: "TRANSFORM YOUR WAR INTO A CRUSADE", category: "Organizational Warfare", body: "Motivate your troops by making their survival tied to the group's success. Unite them under a cause and lead by personal sacrifice to maintain high morale." },
+  { id: 8, title: "PICK YOUR BATTLES CAREFULLY", category: "Defensive Warfare", body: "Fight with perfect economy by knowing your limitations and costs. Undermine covertly and choose battles that ruin the enemy financially, not just militarily." },
+  { id: 9, title: "TURN THE TABLES", category: "Defensive Warfare", body: "Let your aggressors strike first to expose their plan and exhaust their energy. Use patience and bait to set up a powerful, unexpected counterattack." },
+  { id: 10, title: "CREATE A THREATENING PRESENCE", category: "Defensive Warfare", body: "Deter aggressors by building a reputation as unpredictable and costly to fight. Use uncertainty and occasional bold acts to keep opponents off balance and fearful." },
+  { id: 11, title: "TRADE SPACE FOR TIME", category: "Defensive Warfare", body: "Retreating is strength. Buy valuable time to recover and gain perspective by resisting engagement. Let the enemy advance and make the unexpected work for you." },
+  { id: 12, title: "LOSE BATTLES BUT WIN THE WAR", category: "Offensive Warfare", body: "Grand Strategy requires calculating ahead and focusing on the ultimate long-term goal. Subordinate small battles to the campaign and make your actions multidimensional." },
+  { id: 13, title: "KNOW YOUR ENEMY", category: "Offensive Warfare", body: "Target your opponent's mind, studying psychological weaknesses and intentions. Train yourself to read people and avoid projecting your own rationality onto them." },
+  { id: 14, title: "OVERWHELM RESISTANCE WITH SPEED", category: "Offensive Warfare", body: "Strike swiftly before opponents can prepare, causing emotional imbalance and error. Use a setup (ordinary moves) followed by sudden, unrelenting force (extraordinary moves)." },
+  { id: 15, title: "CONTROL THE DYNAMIC", category: "Offensive Warfare", body: "Define the nature of the relationship and fight on terrain of your choice. Maneuver to push your opponent's emotional buttons, compelling them to make mistakes." },
+  { id: 16, title: "HIT THEM WHERE IT HURTS", category: "Offensive Warfare", body: "Find the 'center of gravity'—the core source of your rival's power or support. Striking this weakness inflicts disproportionate pain and causes the structure to collapse." },
+  { id: 17, title: "DEFEAT THEM IN DETAIL", category: "Offensive Warfare", body: "Look at the parts of a formidable foe, not the whole. Sow division within the enemy ranks or split large problems into small, defeatable components." },
+  { id: 18, title: "EXPOSE AND ATTACK SOFT FLANK", category: "Offensive Warfare", body: "Distract the enemy frontally, then attack their soft, unprotected side. Use indirect approaches and cunning generosity to make stubborn opponents move and reveal vulnerabilities." },
+  { id: 19, title: "ENVELOP THE ENEMY", category: "Offensive Warfare", body: "Offer no gaps in your pressure; close off the opponent's access and create psychological enclosure. Tighten the noose to destroy their willpower and achieve annihilation." },
+  { id: 20, title: "MANEUVER THEM INTO WEAKNESS", category: "Offensive Warfare", body: "Prefer maneuver over costly battles. Bait rivals into traps that seem alluring but offer only bad choices, causing them to collapse from frustration and confusion." },
+  { id: 21, title: "NEGOTIATE WHILE ADVANCING", category: "Offensive Warfare", body: "Negotiation is warfare by other means. Keep up relentless pressure to compel settlement on your terms, giving only meaningless concessions. Never let up pressure or seem weak." },
+  { id: 22, title: "KNOW HOW TO END THINGS", category: "Offensive Warfare", body: "End well and strategically. Avoid entanglements with no realistic exits. Win the political aftermath by avoiding exhaustion and creating allies instead of bitter enemies." },
+  { id: 23, title: "WEAVE A SEAMLESS BLEND OF FACT AND FICTION", category: "Unconventional Warfare", body: "Control perceptions by manufacturing a reality that aligns with the enemy's expectations. Blend truth and illusion to distract foes and compel them to fool themselves." },
+  { id: 24, title: "TAKE THE LINE OF LEAST EXPECTATION", category: "Unconventional Warfare", body: "Upset expectations by first doing something conventional (fixing their image), then hitting them with the shocking extraordinary. The terror is amplified by the sudden surprise." },
+  { id: 25, title: "OCCUPY THE MORAL HIGH GROUND", category: "Unconventional Warfare", body: "Frame your cause as righteous to limit the enemy's maneuvering space and public support. Fight fire with fire by exposing your opponent's hypocrisy and seeming selfless." },
+  { id: 26, title: "DENY THEM TARGETS", category: "Unconventional Warfare", body: "Be dangerous but elusive. Give enemies no stable target to attack, confusing them into chasing you into the void. Use pinprick strikes to frustrate and exhaust them." },
+  { id: 27, title: "SEEM TO WORK FOR THE INTERESTS OF OTHERS", category: "Unconventional Warfare", body: "Create shifting alliances to compensate for your deficiencies and get others to do your dirty work. Use gifts and favors as subtle lures to advance your own interests." },
+  { id: 28, title: "GIVE YOUR RIVALS ENOUGH ROPE", category: "Unconventional Warfare", body: "Instill self-doubt and insecurity in subtle rivals. Bait them into rash, embarrassing overreactions. Let them destroy themselves, leaving your hands clean." },
+  { id: 29, title: "TAKE SMALL BITES", category: "Unconventional Warfare", body: "Avoid inspiring envy by making power grabs gradually. Nibble territories piece by piece, relying on people's short attention spans until your empire is a fait accompli." },
+  { id: 30, title: "PENETRATE THEIR MINDS", category: "Unconventional Warfare", body: "Communication is a psychological war. Infiltrate your ideas subtly using actions, details, and memorable experiences to bypass defenses, compelling them to accept your conclusions." },
+  { id: 31, title: "DESTROY FROM WITHIN", category: "Unconventional Warfare", body: "Hide your hostility, join your opponents, and open an inner front. Learn their weaknesses and sow internal dissension to collapse the structure from its core." },
+  { id: 32, title: "DOMINATE WHILE SEEMING TO SUBMIT", category: "Unconventional Warfare", body: "Use passive aggression to deny overt resistance while maintaining control. Seem compliant and weak to disarm enemies, then subtly guide the dynamic in your preferred direction." },
+  { id: 33, title: "SOW UNCERTAINTY AND PANIC", category: "Unconventional Warfare", body: "Use strategic, sporadic acts of violence (terror) to create overwhelming psychological chaos. Provoke the enemy into irrational overreaction, proving your power despite limited physical means." }
+];
+
+const DATA_HUMAN_NATURE = [
+  { id: 1, title: "MASTER YOUR EMOTIONAL SELF", category: "The Law of Irrationality", body: "You are not born rational; you must cultivate this power. Emotions dominate your decisions, forcing you to seek comforting ideas and skewing your view of reality." },
+  { id: 2, title: "TRANSFORM SELF-LOVE INTO EMPATHY", category: "The Law of Narcissism", body: "We are all narcissists to some degree. Turn your natural self-love outward to genuinely understand others' perspectives, rather than letting self-absorption isolate and blind you." },
+  { id: 3, title: "SEE THROUGH PEOPLE’S MASKS", category: "The Law of Role-playing", body: "People constantly wear masks to present a positive front. Master nonverbal cues (the 'second language') to read the true feelings and concealed aggression leaking from beneath their facade." },
+  { id: 4, title: "DETERMINE THE STRENGTH OF CHARACTER", category: "The Law of Compulsive Behavior", body: "Character is destiny. Ignore reputation and charm; study long-term patterns, as deep-seated habits compel people to inevitably repeat their behavior and mistakes. People never do something just once." },
+  { id: 5, title: "BECOME AN ELUSIVE OBJECT OF DESIRE", category: "The Law of Covetousness", body: "People desire what they cannot easily possess (the 'grass-is-always-greener' syndrome). Create an aura of mystery and strategic absence to make yourself an object of consuming fantasy and longing." },
+  { id: 6, title: "ELEVATE YOUR PERSPECTIVE", category: "The Law of Shortsightedness", body: "Avoid the trap of living only in the moment. Cultivate a farsighted view, looking for consequences and long-term trends to avoid irrational, reactive, and ultimately self-destructive decisions." },
+  { id: 7, title: "SOFTEN RESISTANCE BY CONFIRMING SELF-OPINION", category: "The Law of Defensiveness", body: "People resist being persuaded because it threatens their autonomy and self-esteem. To gain influence, confirm their self-opinion that they are autonomous, intelligent, and good, making them want to follow your lead." },
+  { id: 8, title: "CHANGE CIRCUMSTANCES BY CHANGING ATTITUDE", category: "The Law of Self-sabotage", body: "Your attitude dictates how you perceive the world, creating a self-fulfilling dynamic. Stop blaming others; choose an expansive, positive attitude to create opportunities instead of repeating self-sabotaging patterns." },
+  { id: 9, title: "CONFRONT YOUR DARK SIDE", category: "The Law of Repression", body: "We all repress a 'Shadow' of aggressive and selfish impulses. If denied, this dark side leaks out in toxic behavior. Acknowledge your shadow to control and channel its powerful, creative energy." },
+  { id: 10, title: "BEWARE THE FRAGILE EGO", category: "The Law of Envy", body: "Envy is a primary, hidden driver of sabotage, especially among friends and peers. Recognize subtle signs—poisonous praise, coldness—before the fragile ego of the envier turns hostile and inflicts long-term damage." },
+  { id: 11, title: "KNOW YOUR LIMITS", category: "The Law of Grandiosity", body: "Success can inflate your self-opinion into grandiosity, leading you to overestimate your skills and despise counsel. Stay grounded, focus on reality, and tie your need for greatness to disciplined, practical achievements, not fantasy." },
+  { id: 12, title: "RECONNECT TO THE MASCULINE OR FEMININE", category: "The Law of Gender Rigidity", body: "Over-identifying with expected gender roles creates rigidity and represses essential 'anima' or 'animus' qualities. Blend masculine and feminine traits to gain creative fluidity and become authentically compelling." },
+  { id: 13, title: "ADVANCE WITH A SENSE OF PURPOSE", category: "The Law of Aimlessness", body: "Aimlessness leads to insecurity and wasted energy. Discover your unique calling—the inner 'voice'—to guide your decisions, giving your life unstoppable force and direction. This is a powerful 'force multiplier'." },
+  { id: 14, title: "RESIST THE DOWNWARD PULL OF THE GROUP", category: "The Law of Conformity", body: "Groups naturally degrade individual rationality and encourage conformity (the 'social force'). Cultivate detachment to maintain your independence, and strategically use self-awareness to positively guide the group dynamic." },
+  { id: 15, title: "MAKE THEM WANT TO FOLLOW YOU", category: "The Law of Fickleness", body: "Authority must be earned; people are ambivalent about leaders and quick to turn. Demonstrate high purpose and empathy while maintaining a firm vision. Never assume loyalty or display arrogance, which invites rebellion." },
+  { id: 16, title: "SEE THE HOSTILITY BEHIND THE FACADE", category: "The Law of Aggression", body: "Aggression is rooted in fear and the need for control. Recognize 'sophisticated aggressors' by their compulsion to dominate and the rationalizations they use. Channel your own assertive energy productively (controlled aggression)." },
+  { id: 17, title: "SEIZE THE HISTORICAL MOMENT", category: "The Law of Generational Myopia", body: "Generational attitudes create cultural shifts and blindness. Understand the current Zeitgeist—the collective spirit and trends—to free your mind from its constraints and strategically position your work to set new directions." },
+  { id: 18, title: "MEDITATE ON OUR COMMON MORTALITY", category: "The Law of Death Denial", body: "Denying death creates chronic anxiety and denial of reality. Confront your mortality to gain urgency, clarity, and an intense sense of purpose. This paradoxically makes you feel more alive and resilient." }
+];
+
+const DATA_SEDUCTION = [
+  { id: 1, title: "THE SIREN", category: "The Art of Seduction: Type", body: "Offers total release from rational life; lures men through heightened sexual allure and theatrical presence. Embodies his fantasy to gain control of his libido." },
+  { id: 2, title: "THE RAKE", category: "The Art of Seduction: Type", body: "Unrestrained and devoted purely to women, creating an unforgettable moment of pure pleasure and danger. Seduces women with words and infectious desire." },
+  { id: 3, title: "THE IDEAL LOVER", category: "The Art of Seduction: Type", body: "Reflects a target's crushed youth ideals or missing spiritual communion. Creates an illusion of romance and aesthetic perfection to win devotion." },
+  { id: 4, title: "THE DANDY", category: "The Art of Seduction: Type", body: "Cannot be categorized, playing with masculine and feminine traits. Excites the trapped individual by hinting at a freedom and allure they crave for themselves." },
+  { id: 5, title: "THE NATURAL", category: "The Art of Seduction: Type", body: "Embodies the longed-for qualities of childhood—spontaneity, sincerity, and playfulness. Neutralizes defensiveness by transporting the victim back to a golden age." },
+  { id: 6, title: "THE COQUETTE", category: "The Art of Seduction: Type", body: "Masters the alternating movement between hope and frustration. Their self-sufficiency and cool distance make victims pursue them feverishly to secure a reward." },
+  { id: 7, title: "THE CHARMER", category: "The Art of Seduction: Type", body: "Mask their manipulation by focusing attention entirely on the target, adapting to moods, and valuing self-esteem. They create pleasure and comfort to induce dependence." },
+  { id: 8, title: "THE CHARISMATIC", category: "The Art of Seduction: Type", body: "Excites the masses by radiating self-confidence, purpose, and mystery. They create a spiritual illusion, making themselves seem extraordinary and worthy of blind faith." },
+  { id: 9, title: "THE STAR", category: "The Art of Seduction: Type", body: "Feeds the universal need for escape and fantasy. They stand out through distinctive style, remaining vague and ethereal, allowing targets to imagine more than is there." },
+  { id: 10, title: "THE ANTI-SEDUCER", category: "The Art of Seduction: Type", body: "The opposite of the seducer: insecure, self-absorbed, and oblivious to others' psychology. They repel targets through nagging, pestering, and total lack of subtlety." },
+  { id: 11, title: "CHOOSE THE RIGHT VICTIM", category: "The Art of Seduction: Strategy", body: "Choose targets who are isolated, unhappy, or have a void you can fill. Avoid the completely contented. The perfect victim makes the chase easier." },
+  { id: 12, title: "APPROACH INDIRECTLY", category: "The Art of Seduction: Strategy", body: "Start at an angle, perhaps as a friend, to avoid arousing resistance. Lull the target into security before they even realize a seduction is happening." },
+  { id: 13, title: "SEND MIXED SIGNALS", category: "The Art of Seduction: Strategy", body: "Be hard to figure out by combining contradictory qualities (e.g., tough yet tender, innocent yet cunning). A mix suggests depth and complexity that fascinates." },
+  { id: 14, title: "CREATE TRIANGLES", category: "The Art of Seduction: Strategy", body: "Surround yourself with admirers to create an aura of desirability. Stimulate rivalry so the target's vanity makes them desperate to possess you." },
+  { id: 15, title: "CREATE A NEED", category: "The Art of Seduction: Strategy", body: "Instill dissatisfaction with the target's current circumstances or self-image. Pain and anxiety precede pleasure; manufacture the void you alone can fill." },
+  { id: 16, title: "MASTER INSINUATION", category: "The Art of Seduction: Strategy", body: "Plant ideas in the victim's mind using elusive hints and ambiguous gestures. Your suggestive sublanguage bypasses defenses and makes the idea seem like their own." },
+  { id: 17, title: "ENTER THEIR SPIRIT", category: "The Art of Seduction: Strategy", body: "Adapt to their moods, enjoy what they enjoy, and play by their rules to stroke their narcissism. This lowers defenses and makes them open to your subtle influence." },
+  { id: 18, title: "CREATE TEMPTATION", category: "The Art of Seduction: Strategy", body: "Awaken irresistible desire by hinting that you can fulfill a secret, repressed fantasy. Keep the promise vague to stimulate curiosity and postpone satisfaction." },
+  { id: 19, title: "KEEP IN SUSPENSE", category: "The Art of Seduction: Strategy", body: "Break the predictability by delivering a calculated surprise or sudden change of direction. This keeps the victim off balance, creating a delightful sense of spontaneity." },
+  { id: 20, title: "USE DEMONIC WORDS", category: "The Art of Seduction: Strategy", body: "Fill their ears with sweet flattery and vague promises. Seductive language intoxicates emotions and weakens resistance by appealing to illusion over reality." },
+  { id: 21, title: "PAY ATTENTION TO DETAIL", category: "The Art of Seduction: Strategy", body: "Use subtle gestures, tailored gifts, and pleasing rituals to distract the senses. Mesmerized by small, charming details, they won't notice your true objective." },
+  { id: 22, title: "POETICIZE YOUR PRESENCE", category: "The Art of Seduction: Strategy", body: "Alternate exciting presence with cool distance and absence. Associate yourself with poetic images so the target idealizes you in your absence and resists familiarity." },
+  { id: 23, title: "DISARM VIA WEAKNESS", category: "The Art of Seduction: Strategy", body: "Make the target feel superior and strong by seeming vulnerable, emotional, or bashful. Play the victim to cover your calculated tracks and turn sympathy into love." },
+  { id: 24, title: "CONFUSE REALITY", category: "The Art of Seduction: Strategy", body: "Create the illusion that through you they can live out their deepest, thwarted dreams. Aim at secret wishes to stir uncontrollable emotions and cloud their reason." },
+  { id: 25, title: "ISOLATE THE VICTIM", category: "The Art of Seduction: Strategy", body: "Slowly cut them off from friends, routines, and milieu. Isolated targets lose outside support and certainty, becoming confused and highly vulnerable to your influence." },
+  { id: 26, title: "PROVE YOURSELF", category: "The Art of Seduction: Strategy", body: "Overwhelm remaining doubts with one dramatic, self-sacrificing action that shows how far you'll go for them. Meet resistance with chivalry and bravery." },
+  { id: 27, title: "EFFECT A REGRESSION", category: "The Art of Seduction: Strategy", body: "Position yourself as a parental or sibling figure to fulfill unconscious desires from early childhood. Unaware of the cause, they transfer deep emotions onto you." },
+  { id: 28, title: "STIR THE TABOO", category: "The Art of Seduction: Strategy", body: "Lure them past social and personal limits and taboos, encouraging them to explore their dark, repressed side. The shared feeling of transgression creates a powerful bond." },
+  { id: 29, title: "USE SPIRITUAL LURES", category: "The Art of Seduction: Strategy", body: "Distract from physical insecurities by focusing on the sublime, like art, destiny, or religion. The ultimate sexual culmination becomes a seemingly spiritual, uninhibited union." },
+  { id: 30, title: "MIX PLEASURE WITH PAIN", category: "The Art of Seduction: Strategy", body: "Avoid monotony by inflicting calculated anxiety, guilt, or fear. Lure them with kindness, then withdraw, making the low lows intensify the ensuing highs and destroy their will." },
+  { id: 31, title: "PURSUER IS PURSUED", category: "The Art of Seduction: Strategy", body: "Once the victim is ripe, take a step back and hint at boredom or interest in others. Their anxiety will compel them to pursue you physically, leading to surrender." },
+  { id: 32, title: "USE PHYSICAL LURES", category: "The Art of Seduction: Strategy", body: "Waken dormant senses and lull the mind by combining a nonchalant attitude with a charged sexual presence. Infect them with desire; morality and judgment melt away." },
+  { id: 33, title: "MASTER THE BOLD MOVE", category: "The Art of Seduction: Strategy", body: "When the target desires you but hesitates, cast aside coquetry and strike decisively. The attack must seem driven by passion, allowing no time for considering consequences." },
+  { id: 34, title: "BEWARE THE AFTEREFFECTS", category: "The Art of Seduction: Strategy", body: "If staying, constantly re-seduce to prevent familiarity and boredom from setting in. If leaving, break the spell swiftly and suddenly; never prolong the painful goodbye." }
+];
+
+/**
+ * ==============================
+ * THEME CONFIGURATION
+ * ==============================
+ */
+
+const BOOKS = {
+  power: {
+    id: 'power',
+    title: '48 LAWS OF POWER',
+    icon: Crown,
+    data: DATA_48_LAWS,
+    colors: {
+      background: '#C4302B',   // Darker Red for better contrast/less vibration
+      cardBg: '#100B70',       // Darker Blue for better contrast/less vibration
+      accent: '#C8AB39',       // Gold
+      text: '#FFFFFF',
+      textMuted: '#B0B0E0',
+      font: '"Libre Baskerville", serif'
+    }
+  },
+  war: {
+    id: 'war',
+    title: '33 STRATEGIES OF WAR',
+    icon: Sword,
+    data: DATA_33_STRATEGIES,
+    colors: {
+      background: '#3B423E',   // Olive Grey
+      cardBg: '#A62C26',       // Brick Red
+      accent: '#F2F2F2',       // Off-White
+      text: '#F2F2F2',
+      textMuted: '#D4A5A5',
+      font: '"Libre Baskerville", serif'
+    }
+  },
+  nature: {
+    id: 'nature',
+    title: 'LAWS OF HUMAN NATURE',
+    icon: Eye,
+    data: DATA_HUMAN_NATURE,
+    colors: {
+      background: '#29487D',   // Denim Blue
+      cardBg: '#CE3333',       // Red
+      accent: '#FFFFFF',       // White
+      text: '#FFFFFF',
+      textMuted: '#FFCCCC',    // Light red/pink
+      font: '"Libre Baskerville", serif'
+    }
+  },
+  seduction: {
+    id: 'seduction',
+    title: 'THE ART OF SEDUCTION',
+    icon: Flame, // Using Flame as proxy for "Seduction/Passion"
+    data: DATA_SEDUCTION,
+    colors: {
+      background: '#1A1A1A',   // Soft Black
+      cardBg: '#B34A64',       // Darker Deep Pink for better text contrast
+      accent: '#C8AB39',       // Gold
+      text: '#FFFFFF',         // White Text
+      textMuted: '#FFE4E1',    // Misty Rose for muted text
+      font: '"Cinzel", serif'  // Custom font for Seduction headers
+    }
+  }
+};
+
+// Utility: Fisher-Yates shuffle
+const shuffleArray = (array) => {
+  let currentIndex = array.length, randomIndex;
+  while (currentIndex !== 0) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex--;
+    [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+  }
+  return array;
+};
+
+// Storage Helpers
+const getStorage = (key) => {
+  try {
+    const saved = localStorage.getItem(key);
+    // Initialize with all book keys
+    const defaults = { power: new Set(), war: new Set(), nature: new Set(), seduction: new Set() };
+    if (!saved) return defaults;
+    
+    // Convert arrays back to sets
+    const parsed = JSON.parse(saved);
+    return {
+      power: new Set(parsed.power || []),
+      war: new Set(parsed.war || []),
+      nature: new Set(parsed.nature || []),
+      seduction: new Set(parsed.seduction || [])
+    };
+  } catch (e) {
+    return { power: new Set(), war: new Set(), nature: new Set(), seduction: new Set() };
+  }
+};
+
+const setStorage = (key, data) => {
+  try {
+    // Convert sets to arrays for JSON
+    const serialized = {
+      power: Array.from(data.power),
+      war: Array.from(data.war),
+      nature: Array.from(data.nature),
+      seduction: Array.from(data.seduction)
+    };
+    localStorage.setItem(key, JSON.stringify(serialized));
+  } catch (e) {
+    console.error("Storage failed", e);
+  }
+};
+
+const PostCard = ({ item, isSaved, isLiked, onToggleSave, onToggleLike, colors }) => {
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(`${item.title}\n\n${item.body}`);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Default font fallback
+  const titleFont = colors.font || '"Libre Baskerville", serif';
+
+  return (
+    <article 
+      className="w-full mb-1 py-6 px-6 transition-all duration-300"
+      style={{ backgroundColor: colors.cardBg, borderBottom: '1px solid rgba(0,0,0,0.2)' }}
+    >
+      {/* Meta Header */}
+      <div className="flex items-center justify-between mb-3 text-xs font-bold tracking-widest uppercase" style={{ color: colors.textMuted }}>
+        <div className="flex items-center gap-2">
+          <Book className="w-3 h-3" style={{ color: colors.accent }} />
+          <span style={{ color: colors.accent }}>
+            {item.category ? item.category : `Law ${item.id}`}
+          </span>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="mb-6">
+        <h2 className="text-xl sm:text-2xl font-bold leading-tight mb-3 tracking-tight" style={{ color: colors.text, fontFamily: titleFont }}>
+          {item.title}
+        </h2>
+        <p className="text-base sm:text-lg leading-relaxed font-light opacity-90" style={{ color: colors.text }}>
+          {item.body}
+        </p>
+      </div>
+
+      {/* Action Footer */}
+      <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/10 w-full">
+        
+        {/* SAVE */}
+        <button 
+          onClick={() => onToggleSave(item.id, item.bookId || null)} 
+          className="flex items-center justify-start gap-2 group outline-none flex-1 active:scale-95 transition-transform"
+        >
+          <Bookmark className={`w-5 h-5 transition-all duration-300 ${isSaved ? 'fill-current' : 'opacity-70'}`} style={{ color: colors.accent }} />
+          <span className={`text-xs font-bold tracking-wider transition-opacity duration-300 opacity-70`} style={{color: colors.accent}}>
+            {isSaved ? 'SAVED' : 'SAVE'}
+          </span>
+        </button>
+        
+        {/* LIKE (INTERNALIZE) */}
+        <button 
+          onClick={() => onToggleLike(item.id, item.bookId || null)}
+          className="flex items-center justify-center gap-2 group outline-none flex-1 active:scale-95 transition-transform"
+        >
+          <Heart className={`w-5 h-5 transition-all duration-300 ${isLiked ? 'fill-current' : 'opacity-70'}`} style={{ color: colors.accent }} />
+          <span className={`text-xs font-bold tracking-wider transition-opacity duration-300 opacity-70`} style={{color: colors.accent}}>
+            ABSORB
+          </span>
+        </button>
+
+        {/* SHARE */}
+        <button 
+          onClick={handleShare}
+          className="flex items-center justify-end gap-2 group outline-none flex-1 active:scale-95 transition-transform"
+        >
+          {copied ? (
+            <Check className="w-5 h-5 text-green-400" />
+          ) : (
+            <Share2 className="w-5 h-5 transition-colors opacity-70" style={{ color: colors.accent }} />
+          )}
+          <span className={`text-xs font-bold tracking-wider transition-opacity duration-300 opacity-70`} style={{color: colors.accent}}>
+            {copied ? 'COPIED' : 'SHARE'}
+          </span>
+        </button>
+
+      </div>
+    </article>
+  );
+};
+
+export default function App() {
+  // State
+  const [currentBook, setCurrentBook] = useState('power');
+  const [feed, setFeed] = useState([]);
+  
+  // Storage (Per Book) initialized from localStorage
+  const [savedItems, setSavedItems] = useState(() => getStorage('scroller_saved_v3'));
+  const [likedItems, setLikedItems] = useState(() => getStorage('scroller_liked_v3'));
+  
+  const [view, setView] = useState('feed'); // 'feed' | 'saved' | 'liked'
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const loaderRef = useRef(null);
+  const observerRef = useRef(null);
+  
+  // Derived Constants
+  const activeTheme = BOOKS[currentBook];
+  const activeColors = activeTheme.colors;
+
+  // Font Injection
+  useEffect(() => {
+    const link = document.createElement('link');
+    // Added Cinzel to fonts
+    link.href = 'https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap';
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+    return () => document.head.removeChild(link);
+  }, []);
+
+  // Persist State Changes
+  useEffect(() => {
+    setStorage('scroller_saved_v3', savedItems);
+  }, [savedItems]);
+
+  useEffect(() => {
+    setStorage('scroller_liked_v3', likedItems);
+  }, [likedItems]);
+
+  // Reset Feed on Book Switch
+  useEffect(() => {
+    setIsTransitioning(true);
+    setFeed([]);
+    
+    // Brief timeout for visual transition
+    const timer = setTimeout(() => {
+      loadMoreItems(15, activeTheme.data);
+      setIsTransitioning(false);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [currentBook]);
+
+  const loadMoreItems = (count, dataSource = activeTheme.data) => {
+    const shuffled = shuffleArray([...dataSource]);
+    const selected = shuffled.slice(0, count);
+    const newItems = selected.map(item => ({
+      ...item,
+      // We inject bookId here so the feed item knows where it came from
+      bookId: currentBook,
+      uniqueId: `${item.id}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    }));
+    
+    setFeed(prev => [...prev, ...newItems]);
+  };
+
+  // Infinite Scroll Observer
+  const handleObserver = useCallback((entries) => {
+    const target = entries[0];
+    if (target.isIntersecting && view === 'feed' && !isTransitioning) {
+      loadMoreItems(5);
+    }
+  }, [view, isTransitioning, currentBook]);
+
+  useEffect(() => {
+    const option = {
+      root: null,
+      rootMargin: "20px",
+      threshold: 0
+    };
+    observerRef.current = new IntersectionObserver(handleObserver, option);
+    if (loaderRef.current) observerRef.current.observe(loaderRef.current);
+    
+    return () => {
+      if (loaderRef.current) observerRef.current.unobserve(loaderRef.current);
+    };
+  }, [handleObserver, feed, view]);
+
+  // Actions
+  const toggleSave = (id, targetBookId = null) => {
+    const bookKey = targetBookId || currentBook;
+    setSavedItems(prev => {
+      const bookSaves = new Set(prev[bookKey]);
+      if (bookSaves.has(id)) bookSaves.delete(id);
+      else bookSaves.add(id);
+      return { ...prev, [bookKey]: bookSaves };
+    });
+  };
+
+  const toggleLike = (id, targetBookId = null) => {
+    const bookKey = targetBookId || currentBook;
+    setLikedItems(prev => {
+      const bookLikes = new Set(prev[bookKey]);
+      if (bookLikes.has(id)) bookLikes.delete(id);
+      else bookLikes.add(id);
+      return { ...prev, [bookKey]: bookLikes };
+    });
+  };
+
+  // Filter Items
+  const getDisplayItems = () => {
+    if (view === 'saved') {
+      let allSaved = [];
+      Object.keys(BOOKS).forEach(bookKey => {
+        const bookData = BOOKS[bookKey].data;
+        const bookSaves = savedItems[bookKey];
+        const bookTheme = BOOKS[bookKey]; // Get full theme object
+        
+        const items = bookData
+          .filter(item => bookSaves.has(item.id))
+          .map(item => ({
+            ...item,
+            bookId: bookKey,
+            colors: {
+               ...bookTheme.colors,
+               font: bookTheme.colors.font // Ensure font is passed
+            },
+            uniqueId: `saved-${bookKey}-${item.id}`
+          }));
+        allSaved = [...allSaved, ...items];
+      });
+      return allSaved;
+    }
+
+    if (view === 'liked') {
+      let allLiked = [];
+      Object.keys(BOOKS).forEach(bookKey => {
+        const bookData = BOOKS[bookKey].data;
+        const bookLikes = likedItems[bookKey];
+        const bookTheme = BOOKS[bookKey];
+        
+        const items = bookData
+          .filter(item => bookLikes.has(item.id))
+          .map(item => ({
+            ...item,
+            bookId: bookKey,
+            colors: {
+               ...bookTheme.colors,
+               font: bookTheme.colors.font
+            },
+            uniqueId: `liked-${bookKey}-${item.id}`
+          }));
+        allLiked = [...allLiked, ...items];
+      });
+      return allLiked;
+    }
+    
+    // Normal Feed
+    return feed;
+  };
+
+  const displayItems = getDisplayItems();
+
+  const handleBookSwitch = (bookId) => {
+    if (bookId === currentBook) return;
+    setView('feed');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setCurrentBook(bookId);
+  };
+
+  return (
+    <div className="min-h-screen font-sans flex justify-center transition-colors duration-700 ease-in-out" 
+         style={{ backgroundColor: activeColors.background }}>
+      
+      <div className="w-full max-w-lg shadow-2xl min-h-screen flex flex-col relative pb-20" style={{ backgroundColor: activeColors.background }}>
+        
+        {/* Sticky Header */}
+        <header className="sticky top-0 z-40 backdrop-blur-md border-b border-white/10 px-4 h-16 flex items-center justify-between shadow-lg transition-colors duration-500" 
+                style={{ backgroundColor: activeColors.cardBg + 'F2' }}>
+          
+          <button onClick={() => { setView('feed'); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className="flex items-center gap-3 group">
+            <div className={`w-9 h-9 flex items-center justify-center rounded-sm font-serif font-bold text-lg border-2 transition-all duration-300 ${view === 'feed' ? 'bg-white/10' : ''}`}
+                 style={{ borderColor: activeColors.accent, color: activeColors.accent }}>
+               {/* Replaced Text Number with Book Icon */}
+               {view === 'feed' ? (
+                 <activeTheme.icon className="w-5 h-5" />
+               ) : (view === 'saved' ? <Bookmark className="w-5 h-5" /> : <Heart className="w-5 h-5" />)}
+            </div>
+            <div className="flex flex-col items-start">
+              <span className="text-sm font-black tracking-widest uppercase" style={{ color: activeColors.text }}>THE SCROLLER</span>
+              <span className="text-[10px] font-bold tracking-wide" style={{ color: activeColors.accent }}>
+                {view === 'feed' ? (
+                  /* Added Progress Indicator */
+                  <span>{activeTheme.title} • {likedItems[currentBook].size}/{activeTheme.data.length}</span>
+                ) : (
+                   view === 'saved' ? 'MASTER SAVED LIST' : 'INTERNALIZED LIST'
+                )}
+              </span>
+            </div>
+          </button>
+
+          <div className="flex items-center gap-4">
+             <button 
+              onClick={() => setView('liked')}
+              className={`p-2 rounded-full transition-all duration-200 ${view === 'liked' ? 'bg-white/20 scale-110' : 'hover:bg-white/10'}`}
+            >
+              <Heart className={`w-6 h-6 transition-colors ${view === 'liked' ? 'fill-current' : ''}`} style={{ color: view === 'liked' ? activeColors.accent : activeColors.text }} />
+            </button>
+
+            <button 
+              onClick={() => setView('saved')}
+              className={`p-2 rounded-full transition-all duration-200 ${view === 'saved' ? 'bg-white/20 scale-110' : 'hover:bg-white/10'}`}
+            >
+              <Bookmark className={`w-6 h-6 transition-colors ${view === 'saved' ? 'fill-current' : ''}`} style={{ color: view === 'saved' ? activeColors.accent : activeColors.text }} />
+            </button>
+          </div>
+        </header>
+
+        {/* Main Feed */}
+        <main className={`flex-1 transition-opacity duration-500 ${isTransitioning ? 'opacity-0' : 'opacity-100'}`}>
+          {displayItems.length > 0 ? (
+            displayItems.map((item) => (
+              <PostCard 
+                key={item.uniqueId} 
+                item={item} 
+                isSaved={savedItems[item.bookId || currentBook].has(item.id)}
+                isLiked={likedItems[item.bookId || currentBook].has(item.id)} 
+                onToggleSave={toggleSave}
+                onToggleLike={toggleLike}
+                colors={item.colors || activeColors}
+              />
+            ))
+          ) : (
+            <div className="flex flex-col items-center justify-center py-24 px-6 text-center opacity-70" style={{ color: activeColors.text }}>
+              <div className="mb-4 opacity-50">
+                 {view === 'saved' ? <Bookmark className="w-12 h-12" /> : <Heart className="w-12 h-12" />}
+              </div>
+              <p className="font-serif text-xl mb-2">Nothing here yet.</p>
+              <p className="text-xs mb-8 opacity-70 max-w-xs mx-auto">
+                 {view === 'saved' ? 'Items you save from any book will appear here, in their original style.' : 'Items you internalize will appear here.'}
+              </p>
+              <button 
+                onClick={() => setView('feed')}
+                className="px-6 py-2 border border-white/30 rounded-full hover:bg-white/10 transition-colors text-sm font-bold tracking-widest"
+              >
+                RETURN TO FEED
+              </button>
+            </div>
+          )}
+
+          {view === 'feed' && (
+            <div ref={loaderRef} className="py-16 flex flex-col items-center justify-center gap-3">
+              <div 
+                className="w-6 h-6 border-2 rounded-full animate-spin" 
+                style={{ 
+                  borderTopColor: 'transparent', 
+                  borderRightColor: activeColors.accent, 
+                  borderBottomColor: activeColors.accent, 
+                  borderLeftColor: activeColors.accent 
+                }}
+              ></div>
+            </div>
+          )}
+        </main>
+
+        {/* Fixed Footer Navigation */}
+        <nav className="fixed bottom-0 z-50 w-full max-w-lg bg-neutral-900 border-t border-neutral-800 flex items-center h-16 pb-safe">
+            {Object.values(BOOKS).map((book, index) => {
+              const isActive = currentBook === book.id;
+              
+              // Colors are now CONSTANT from the book definition
+              const textColor = book.colors.accent; 
+              
+              // Background only shows when active
+              const bgColor = isActive ? book.colors.cardBg : 'transparent';
+
+              return (
+                <React.Fragment key={book.id}>
+                  {index > 0 && <div className="w-[1px] h-8 bg-neutral-800"></div>}
+                  <button 
+                    onClick={() => handleBookSwitch(book.id)}
+                    className="flex flex-col items-center justify-center flex-1 h-full transition-all duration-300 relative overflow-hidden group"
+                    style={{ backgroundColor: bgColor }}
+                  >
+                    {!isActive && (
+                       <div className="absolute inset-0 opacity-0 group-hover:opacity-20 transition-opacity" style={{ backgroundColor: book.colors.cardBg }}></div>
+                    )}
+                    
+                    <book.icon className="w-5 h-5 mb-1 z-10" style={{ color: textColor }} />
+                    <span className="text-[9px] font-bold tracking-widest z-10 text-center leading-none" style={{ color: textColor }}>
+                      {book.id === 'power' ? '48 LAWS' : book.id === 'war' ? '33 STRATEGIES' : book.id === 'nature' ? 'HUMAN NATURE' : 'SEDUCTION'}
+                    </span>
+                  </button>
+                </React.Fragment>
+              );
+            })}
+        </nav>
+
+      </div>
+    </div>
+  );
+}
